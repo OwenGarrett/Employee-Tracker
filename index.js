@@ -32,6 +32,10 @@ function loadInitialQuestions() {
             name: "Add a Department",
             value: "ADD_DEPARTMENT",
           },
+          {
+            name: "Update Employee Role",
+            value: "UPDATE_EMPLOYEE_ROLE",
+          },
         ],
       },
     ])
@@ -40,10 +44,13 @@ function loadInitialQuestions() {
 
         switch (answer){
             case "VIEW_DEPARTMENTS":
-                viewDepartments()
+                viewDepartments();
             break; 
             case "ADD_DEPARTMENT":
-                addDepartment()
+                addDepartment();
+                break;
+                case "UPDATE_EMPLOYEE_ROLE":
+                updateEmployeeRole();
                 break;
 
             default: 
@@ -60,4 +67,27 @@ function viewDepartments(){
     .then(() => {
         loadInitialQuestions()
     });
+}
+
+function updateEmployeeRole(){
+  queries.viewEmployees().then(([employees]) => {
+    const employeeArray = employees.map(({id, first_name, last_name}) => {
+      return ({
+        name: `${first_name} ${last_name}`,
+        value: id 
+      })
+    })
+        prompt([
+          {
+            type: "list",
+            name: "employeeId",
+            message: "Which employees role would you like to update?",
+            choices: employeeArray
+        }
+      ])
+      .then(({employeeId}) => {
+
+      })
+    
+  })
 }
