@@ -1,93 +1,107 @@
 // const express = require("express");
 // import and require mysql 2
-const { prompt }= require('inquirer');
+const { prompt } = require("inquirer");
 // const { inherits } = require("util");
 
-const console = require("console.table")
-require("./Queries")
+const console = require("console.table");
+require("./Queries");
 
-
-
-init()
+init();
 // Connect to database
 
 function init() {
-
-    loadInitialQuestions()
-
+  loadInitialQuestions();
 }
 
 function loadInitialQuestions() {
-    prompt([
-      {
-        type: "list",
-        name: "action",
-        message: "What would you like to do?",
-        choices: [
-          {
-            name: "View all Departments",
-            value: "VIEW_DEPARTMENTS",
-          },
-          {
-            name: "Add a Department",
-            value: "ADD_DEPARTMENT",
-          },
-          {
-            name: "Update Employee Role",
-            value: "UPDATE_EMPLOYEE_ROLE",
-          },
-        ],
-      },
-    ])
-    .then(choice =>{
-        let answer = choice.action
+  prompt([
+    {
+      type: "list",
+      name: "action",
+      message: "What would you like to do?",
+      choices: [
+        {
+          name: "View all Departments",
+          value: "VIEW_DEPARTMENTS",
+        },
+        {
+          name: "Add a Department",
+          value: "ADD_DEPARTMENT",
+        },
+        {
+          name: "Update Employee Role",
+          value: "UPDATE_EMPLOYEE_ROLE",
+        },
+      ],
+    },
+  ]).then((choice) => {
+    let answer = choice.action;
 
-        switch (answer){
-            case "VIEW_DEPARTMENTS":
-                viewDepartments();
-            break; 
-            case "ADD_DEPARTMENT":
-                addDepartment();
-                break;
-                case "UPDATE_EMPLOYEE_ROLE":
-                updateEmployeeRole();
-                break;
+    switch (answer) {
+      case "VIEW_DEPARTMENTS":
+        viewDepartments();
+        break;
+      case "ADD_DEPARTMENT":
+        addDepartment();
+        break;
+      case "UPDATE_EMPLOYEE_ROLE":
+        updateEmployeeRole();
+        break;
 
-            default: 
-            break;
-        }
-    })
+      default:
+        break;
+    }
+  });
 }
 
-function viewDepartments(){
-    queries.viewDepartments()
-    .then(([rows,fields]) => {
-        console.table(rows)
+function viewDepartments() {
+  queries
+    .viewDepartments()
+    .then(([rows, fields]) => {
+      console.table(rows);
     })
     .then(() => {
-        loadInitialQuestions()
+      loadInitialQuestions();
     });
 }
 
-function updateEmployeeRole(){
+function updateEmployeeRole() {
   queries.viewEmployees().then(([employees]) => {
-    const employeeArray = employees.map(({id, first_name, last_name}) => {
-      return ({
+    const employeeArray = employees.map(({ id, first_name, last_name }) => {
+      return {
         name: `${first_name} ${last_name}`,
-        value: id 
-      })
-    })
+        value: id,
+      };
+    });
+    prompt([
+      {
+        type: "list",
+        name: "employeeId",
+        message: "Which employees role would you like to update?",
+        choices: employeeArray,
+      },
+    ]).then(({ employeeId }) => {
+      queries.viewRoles().then(([roles]) => {
+        const roleArray = roles.map(({ id, title }) => {
+          return {
+            name: title,
+            value: id,
+          };
+        });
         prompt([
           {
             type: "list",
-            name: "employeeId",
-            message: "Which employees role would you like to update?",
-            choices: employeeArray
-        }
-      ])
-      .then(({employeeId}) => {
-        
-      })
-    
-  })
+            name: "roleId",
+            message: "which role would you like to update the employee to?",
+            choices: roleArray,
+          },
+        ]).then(({ roleId }) => {
+          queries
+            .updateEmployeeRole(employeeId, roleId)
+            .then(() => console.log("Updatede Employees Role"))
+            .then(() => loadInitialQuestions());
+        });
+      });
+    });
+  });
 }
